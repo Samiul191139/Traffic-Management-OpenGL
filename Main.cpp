@@ -13,11 +13,20 @@ const int YELLOW_DURATION = 3;
 float carPosX = -0.8f;
 float busPosX = 0.2f;
 float bikePosY = 0.3f;
+float oppositeCarX = 0.8f;
+float vCarY = -0.5f;
 
 // Stop positions (just before intersection)
 const float carStopX = -0.65f;
 const float busStopX = -0.5f;
 const float bikeStopY = 0.00f;
+const float oppositeCarStopX = -0.5f;
+const float vCarStopY = 0.05f;
+
+float turningCarX = 1.0f;
+float turningCarY = 0.02f; // Opposite lane Y
+bool isTurning = false;
+float turningCarAngle = 0.0f;
 
 // Traffic signal states and timers
 enum SignalState { RED, GREEN, YELLOW };
@@ -157,6 +166,33 @@ void drawCar(float x, float y) {
     }
 }
 
+//turning car
+void drawTurningCar(float x, float y, float angle) {
+    glPushMatrix();
+
+    // Move to pivot point, rotate, then draw at origin
+    glTranslatef(x + 0.05f, y + 0.025f, 0.0f); // center of the car
+    glRotatef(angle, 0.0f, 0.0f, 1.0f);
+    glTranslatef(-0.05f, -0.025f, 0.0f); // move origin back
+
+    // Taxi-style yellow body
+    drawRectangle(0.0f, 0.0f, 0.1f, 0.05f, 1.0f, 0.85f, 0.1f);  // main body
+    drawRectangle(0.02f, 0.05f, 0.06f, 0.02f, 0.2f, 0.2f, 0.2f); // roof
+    drawRectangle(0.04f, 0.07f, 0.02f, 0.01f, 0, 0, 0);          // taxi sign
+
+    // Wheels
+    drawCircle(0.015f, -0.01f, 0.01f, 0, 0, 0);
+    drawCircle(0.085f, -0.01f, 0.01f, 0, 0, 0);
+
+    // Headlights (at night)
+    if (!isDay) {
+        drawCircle(0.1f, 0.01f, 0.008f, 1.0f, 1.0f, 0.6f);
+        drawCircle(0.1f, 0.035f, 0.008f, 1.0f, 1.0f, 0.6f);
+    }
+
+    glPopMatrix();
+}
+
 // bus
 void drawBus(float x, float y) {
     drawRectangle(x, y, 0.15f, 0.06f, 0.0f, 0.0f, 0.0f); // blue body
@@ -257,9 +293,14 @@ void display()
     drawCircle(busPosX + 0.13f, -0.06f, 0.015f, 0, 0, 0); // Bus wheel rear
 
     drawVerticalCar(-0.6f+0.05f, bikePosY);
-    
-    //drawCircle(-0.6f+2.1f, bikePosY + 0.02f, 0.015f, 0, 0, 0); // Bike wheel bottom
-    //drawCircle(-0.6f+0.018f, bikePosY + 0.02f, 0.015f, 0, 0, 0);  // Bike wheel front
+
+    // Car moving right to left (opposite lane)
+    drawCar(oppositeCarX, 0.02f);
+
+    drawVerticalCar(0.4f + 0.05f, vCarY);
+
+    // Car that turns into vertical right road
+    drawTurningCar(turningCarX, turningCarY, turningCarAngle);
 
     // Signal poles and heads
     drawRectangle(hSignalX - 0.01f, hSignalY, 0.02f, 0.15f, 0.1f, 0.1f, 0.1f); // H pole
@@ -361,6 +402,47 @@ void timer(int value) {
     }
     if (bikePosY < -1.0f) bikePosY = 1.0f;
 
+
+    // Opposite Car Movement (right-to-left)
+    if (oppositeCarX > oppositeCarStopX + 0.1f) {
+        // Before stop line
+        oppositeCarX -= 0.004f;
+    }
+    else if (oppositeCarX > oppositeCarStopX) {
+        // Approaching stop line, obey signal
+        if (horizontalSignal == GREEN)
+            oppositeCarX -= 0.004f;
+    }
+    else {
+        // Crossed stop line
+        oppositeCarX -= 0.004f;
+    }
+    if (oppositeCarX < -1.2f) oppositeCarX = 1.2f;
+
+    // Turning car logic: From horizontal to vertical right-side road
+    if (!isTurning) {
+        if (turningCarX > 0.6f) {
+            turningCarX -= 0.005f;
+        }
+        else {
+            isTurning = true;
+        }
+    }
+    else {
+        if (turningCarAngle < 90.0f) {
+            turningCarAngle += 3.0f;  // smooth rotation
+        }
+        else if (turningCarY < 1.2f) {
+            turningCarY += 0.005f;
+        }
+        else {
+            // Reset
+            turningCarX = 1.0f;
+            turningCarY = 0.02f;
+            turningCarAngle = 0.0f;
+            isTurning = false;
+        }
+    }
 
 
 
