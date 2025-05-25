@@ -219,11 +219,17 @@ void display()
     drawRectangle(busStopX - -0.1f, -0.1f, 0.005f, 0.2f, 1, 1, 1); // Bus stop line a bit to the left
     drawRectangle(-0.6f, bikeStopY + 0.13f, 0.2f, 0.005f, 1, 1, 1); // Bike
 
+    // Additional vertical road (top-right going up)
+    drawRectangle(0.6f, 0.0f, 0.2f, 1.0f, 0.3f, 0.3f, 0.3f); // vertical extension
+    drawDashedLine(0.6f + 0.1f, 0.0f, 0.6f + 0.1f, 1.0f, 0.05f, 1, 1, 1); // lane divider
+
     // Tree rows
     drawTree(-0.85f, 0.2f);
     drawTree(-0.35f, 0.2f);
     drawTree(0.65f, -0.5f);
-    drawTree(0.85f, -0.5f);
+
+    // Pool behind top buildings
+    drawRectangle(-0.25f, 0.25f, 0.8f, 0.3f, 0.3f, 0.6f, 0.9f); // light blue pool
 
     // Top row of buildings
     drawBuildingsRow(-0.2f, 0.1f, 0.35f, 0.0f, 2, 0.05f, 0.25f);
