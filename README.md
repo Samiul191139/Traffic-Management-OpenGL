@@ -47,9 +47,9 @@ Through **visual learning and interactive control**, users can experiment with d
 
 ## Screenshots
 ![Menu](images/menu.png)
-![Night Mode](images/menu.png)
-![Congestion](images/2.png)
 ![Image](images/1.png)
+![Night Mode](images/night.png)
+![Congestion](images/2.png)
 
 ---
 
