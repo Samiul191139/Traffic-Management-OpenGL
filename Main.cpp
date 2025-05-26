@@ -20,13 +20,18 @@ float vCarY = -0.5f;
 const float carStopX = -0.65f;
 const float busStopX = -0.5f;
 const float bikeStopY = 0.00f;
-const float oppositeCarStopX = -0.5f;
+const float oppositeCarStopX = -0.45f;
 const float vCarStopY = 0.05f;
 
 float turningCarX = 1.0f;
 float turningCarY = 0.02f; // Opposite lane Y
 bool isTurning = false;
 float turningCarAngle = 0.0f;
+
+float turningBusX = 1.2f;
+float turningBusY = 0.02f;
+bool isBusTurning = false;
+float turningBusAngle = 0.0f;
 
 // Traffic signal states and timers
 enum SignalState { RED, GREEN, YELLOW };
@@ -95,6 +100,12 @@ void drawMenu() {
     drawText(-0.3f, 0.2f, "SMART TRAFFIC SIMULATION");
     drawText(-0.25f, 0.05f, "Press 'S' to Start Simulation");
     drawText(-0.25f, -0.05f, "Press 'E' to Exit");
+
+    drawText(-0.25f, -0.05f, "");
+    drawText(-0.25f, -0.05f, "Mappings");
+    drawText(-0.25f, -0.05f, "Press '1', '2' or '3' to control Horizontal Traffic");
+    drawText(-0.25f, -0.05f, "Press 'G', 'H' or 'J' to control Vertical Traffic");
+    drawText(-0.25f, -0.05f, "Press 'D' and 'N' to Switch Between Day and Night");
     glFlush();
 }
 
@@ -186,8 +197,8 @@ void drawTurningCar(float x, float y, float angle) {
 
     // Headlights (at night)
     if (!isDay) {
-        drawCircle(0.1f, 0.01f, 0.008f, 1.0f, 1.0f, 0.6f);
-        drawCircle(0.1f, 0.035f, 0.008f, 1.0f, 1.0f, 0.6f);
+        drawCircle(-0.01f, 0.01f, 0.008f, 1.0f, 1.0f, 0.6f);
+        drawCircle(-0.01f, 0.035f, 0.008f, 1.0f, 1.0f, 0.6f);
     }
 
     glPopMatrix();
@@ -195,7 +206,7 @@ void drawTurningCar(float x, float y, float angle) {
 
 // bus
 void drawBus(float x, float y) {
-    drawRectangle(x, y, 0.15f, 0.06f, 0.0f, 0.0f, 0.0f); // blue body
+    drawRectangle(x, y, 0.15f, 0.06f, 0.0f, 0.0f, 0.0f);
 
     // Windows
     drawRectangle(x + 0.01f, y + 0.03f, 0.03f, 0.02f, 1, 1, 1);
@@ -211,6 +222,36 @@ void drawBus(float x, float y) {
         drawCircle(x + 0.15f, y + 0.01f, 0.012f, 1.0f, 1.0f, 0.7f);
         drawCircle(x + 0.15f, y + 0.045f, 0.012f, 1.0f, 1.0f, 0.7f);
     }
+}
+
+//turning bus
+void drawTurningBus(float x, float y, float angle) {
+    glPushMatrix();
+
+    // Move origin to center, rotate, then draw relative to 0,0
+    glTranslatef(x + 0.075f, y + 0.03f, 0.0f); // 0.075 = half of bus width, 0.03 = half height
+    glRotatef(angle, 0.0f, 0.0f, 1.0f);
+    glTranslatef(-0.075f, -0.03f, 0.0f);
+
+    // Draw at new origin (0, 0)
+    drawRectangle(0.0f, 0.0f, 0.15f, 0.06f, 0.0f, 0.0f, 0.5f); // Darker blue bus body
+
+    // Windows
+    drawRectangle(0.01f, 0.03f, 0.03f, 0.02f, 1, 1, 1);
+    drawRectangle(0.05f, 0.03f, 0.03f, 0.02f, 1, 1, 1);
+    drawRectangle(0.09f, 0.03f, 0.03f, 0.02f, 1, 1, 1);
+
+    // Wheels
+    drawCircle(0.03f, -0.01f, 0.015f, 0, 0, 0);
+    drawCircle(0.12f, -0.01f, 0.015f, 0, 0, 0);
+
+    // Headlights at night
+    if (!isDay) {
+        drawCircle(0.15f, 0.01f, 0.012f, 1.0f, 1.0f, 0.7f);
+        drawCircle(0.15f, 0.045f, 0.012f, 1.0f, 1.0f, 0.7f);
+    }
+
+    glPopMatrix();
 }
 
 // vertical car
@@ -299,8 +340,9 @@ void display()
 
     drawVerticalCar(0.4f + 0.05f, vCarY);
 
-    // Car that turns into vertical right road
+    // Bus and Car that turns into vertical right road
     drawTurningCar(turningCarX, turningCarY, turningCarAngle);
+    drawTurningBus(turningBusX, turningBusY, turningBusAngle);
 
     // Signal poles and heads
     drawRectangle(hSignalX - 0.01f, hSignalY, 0.02f, 0.15f, 0.1f, 0.1f, 0.1f); // H pole
@@ -337,8 +379,9 @@ const float VEHICLE_GAP = 0.12f; // Safe distance between vehicles
 
 // Timer updates
 void timer(int value) {
+    const float turningBusStopX = -0.5f;
     float busFrontX = busPosX + 0.25f; // correct front edge of the bus
-    float safeDistance = 0.18f; // safe distance between vehicles
+    float safeDistance = 0.2f; // safe distance between vehicles
     static int frameCount = 0;
     frameCount++;
 
@@ -421,7 +464,7 @@ void timer(int value) {
 
     // Turning car logic: From horizontal to vertical right-side road
     if (!isTurning) {
-        if (turningCarX > 0.6f) {
+        if (turningCarX > 0.7f) {
             turningCarX -= 0.005f;
         }
         else {
@@ -429,8 +472,8 @@ void timer(int value) {
         }
     }
     else {
-        if (turningCarAngle < 90.0f) {
-            turningCarAngle += 3.0f;  // smooth rotation
+        if (turningCarAngle > -90.0f) {
+            turningCarAngle -= 6.0f;
         }
         else if (turningCarY < 1.2f) {
             turningCarY += 0.005f;
@@ -444,7 +487,35 @@ void timer(int value) {
         }
     }
 
-
+    // Turning Bus Logic: From horizontal to vertical right-side road
+    bool CarOppositeAhead = (fabs(oppositeCarX - turningBusX) < safeDistance);
+    if (!isBusTurning) {
+        // Move and obey signal
+        if (turningBusX > turningBusStopX + 0.1f) {
+            if (!CarOppositeAhead) turningBusX -= 0.004f;
+        }
+        else if (turningBusX > turningBusStopX) {
+            if (horizontalSignal == GREEN && !CarOppositeAhead)
+                turningBusX -= 0.004f;
+        }
+        else {
+            isBusTurning = true;  // Begin rotation
+        }
+    }
+    else {
+        if (turningBusAngle > -90.0f) {
+            turningBusAngle -= 4.0f;
+        }
+        else if (turningBusY < 1.2f) {
+            turningBusY += 0.004f;
+        }
+        else {
+            turningBusX = 1.2f;
+            turningBusY = 0.02f;
+            turningBusAngle = 0.0f;
+            isBusTurning = false;
+        }
+    }
 
     // Signal timer update every ~1 sec
     if (frameCount >= 60) {
