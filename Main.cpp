@@ -99,11 +99,12 @@ void drawMenu() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Title
-    drawText(-0.3f, 0.5f, "SMART TRAFFIC SIMULATION");
+    drawText(-0.4f, 0.5f, "Traffic Managemeent Simulation Project");
+    drawText(-0.4f, 0.4f, "Team - SPECTRA");
 
     // Menu options
-    drawText(-0.25f, 0.15f, "Press 'S' to Start Simulation");
-    drawText(-0.25f, 0.05f, "Press 'E' to Exit");
+    drawText(-0.35f, 0.15f, "Press 'S' to Start Simulation");
+    drawText(-0.35f, 0.05f, "Press 'E' to Exit");
 
     // Separator
     drawText(-0.45f, -0.05f, "--------------------------------");
@@ -111,9 +112,9 @@ void drawMenu() {
     // Control mappings section
     drawText(-0.45f, -0.15f, "Mappings:");
     drawText(-0.45f, -0.25f, "1. Horizontal Traffic Control:");
-    drawText(-0.35f, -0.35f, "RED light = '1', YELLOW light = '2', GREEN light = '3'");
+    drawText(-0.35f, -0.35f, "GREEN light = '1', YELLOW light = '2', RED light = '3'");
     drawText(-0.45f, -0.45f, "2. Vertical Traffic Control:");
-    drawText(-0.35f, -0.55f, "RED light = 'G', YELLOW light = 'H', GREEN light = 'J'");
+    drawText(-0.35f, -0.55f, "GREEN light = 'G', YELLOW light = 'H', RED light = 'J'");
     drawText(-0.45f, -0.65f, "3. Switch Day/Night: 'D' and 'N'");
 
     glFlush();
@@ -279,7 +280,6 @@ void drawVerticalCar(float x, float y) {
 
 
 
-
 // Main display
 void display() 
 {
@@ -391,7 +391,7 @@ const float VEHICLE_GAP = 0.12f; // Safe distance between vehicles
 void timer(int value) {
     const float turningBusStopX = -0.5f;
     float busFrontX = busPosX + 0.25f; // correct front edge of the bus
-    float safeDistance = 0.2f; // safe distance between vehicles
+    float safeDistance = 0.15f; // safe distance between vehicles
     static int frameCount = 0;
     frameCount++;
 
@@ -401,19 +401,23 @@ void timer(int value) {
         // Car is before the stop line: always move
         if (!busAhead)
         {
-            carPosX += 0.005f;
+            carPosX += 0.006f;
         }
     }
     else if (carPosX < carStopX) {
         // Car is between its front and stop line: obey signal
-        if (horizontalSignal == GREEN && !busAhead)
+        if (horizontalSignal == GREEN) {
+            carPosX += 0.006f;  // Increase speed when green
+        }
+        else if (!busAhead) {
             carPosX += 0.005f;
+        }
     }
     else {
         // Car has crossed the stop line: always move
         if (!busAhead)
         {
-            carPosX += 0.005f;
+            carPosX += 0.006f;
         }
     }
     if (carPosX > 1.0f) carPosX = -1.0f;
@@ -657,7 +661,7 @@ void keyboard(unsigned char key, int x, int y) {
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitWindowSize(800, 800);
-    glutCreateWindow("Smart Traffic Simulation");
+    glutCreateWindow("Traffic Managemeent Simulation");
     glutKeyboardFunc(keyboard);
 
     glutDisplayFunc(display);
