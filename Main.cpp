@@ -97,15 +97,25 @@ void drawText(float x, float y, std::string text) {
 
 void drawMenu() {
     glClear(GL_COLOR_BUFFER_BIT);
-    drawText(-0.3f, 0.2f, "SMART TRAFFIC SIMULATION");
-    drawText(-0.25f, 0.05f, "Press 'S' to Start Simulation");
-    drawText(-0.25f, -0.05f, "Press 'E' to Exit");
 
-    drawText(-0.25f, -0.05f, "");
-    drawText(-0.25f, -0.05f, "Mappings");
-    drawText(-0.25f, -0.05f, "Press '1', '2' or '3' to control Horizontal Traffic");
-    drawText(-0.25f, -0.05f, "Press 'G', 'H' or 'J' to control Vertical Traffic");
-    drawText(-0.25f, -0.05f, "Press 'D' and 'N' to Switch Between Day and Night");
+    // Title
+    drawText(-0.3f, 0.5f, "SMART TRAFFIC SIMULATION");
+
+    // Menu options
+    drawText(-0.25f, 0.15f, "Press 'S' to Start Simulation");
+    drawText(-0.25f, 0.05f, "Press 'E' to Exit");
+
+    // Separator
+    drawText(-0.45f, -0.05f, "--------------------------------");
+
+    // Control mappings section
+    drawText(-0.45f, -0.15f, "Mappings:");
+    drawText(-0.45f, -0.25f, "1. Horizontal Traffic Control:");
+    drawText(-0.35f, -0.35f, "RED light = '1', YELLOW light = '2', GREEN light = '3'");
+    drawText(-0.45f, -0.45f, "2. Vertical Traffic Control:");
+    drawText(-0.35f, -0.55f, "RED light = 'G', YELLOW light = 'H', GREEN light = 'J'");
+    drawText(-0.45f, -0.65f, "3. Switch Day/Night: 'D' and 'N'");
+
     glFlush();
 }
 
